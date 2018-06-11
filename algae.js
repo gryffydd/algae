@@ -119,35 +119,37 @@ function iterate_cells () {
   /* For each cell work out what happens */
   for (var c = 0; c < cells.length; c++) {
     new_cells[c] = new Cell();
-    /* Zero the tribe weights and the sum */
+    new_cells[c].tribe = cells[c].tribe;
+    new_cells[c].age = cells[c].age;
+
+    /* Zero the tribe weights */
     for (var t = 0; t < tribe_weight.length; t++) {
       tribe_weight[t] = 0;
     }
-    var sum = 0;
+    /* Sum the weight of the neighbours */
     for (var n = 0; n < NEIGHBOUR_OFFSET.length; n++) {
-//      print(c);
-//      print(n);
-//      print(NEIGHBOUR_OFFSET[n]);
-//      print((c + NEIGHBOUR_OFFSET[n]) % cells.length);
-//      print(cells[(c + NEIGHBOUR_OFFSET[n]) % cells.length]);
       var nc = cells[(c + NEIGHBOUR_OFFSET[n]) % cells.length];
       tribe_weight[nc.tribe] += NEIGHBOUR_WEIGHT[n];
     }
+
+    /* Pick a random point on the distribution */
+
     var which_tribe = random(NEIGHBOUR_WEIGHT_TOTAL);
     for (var t = 0; t < tribe_weight.length; t++) {
       which_tribe -= tribe_weight[t];
       if (which_tribe < 0) {
         if (t == NO_TRIBE || cells[c].tribe == t) {
-          new_cells[c].age = cells[c].age;
           new_cells[c].survived();
         } else {
           new_cells[c].spawn(t); 
         }
-        print('Cell: ' + c + ', Tribe: ' + t + ' -> ' + tribe_weight[t]);
+        // print('Cell: ' + c + ', Tribe: ' + t + ' -> ' + tribe_weight[t]);
         break;
       }
     }
   }
+
+  /* Point the cells array to the new array */
   cells = new_cells;
 }
 
@@ -174,9 +176,6 @@ function setup() {
 
   /* Initialise the environment - put down 6 random tribes */
   init_cells();
-
-  /* Until we get this right, set noLoop();*/
-  //noLoop();
 }
 
 function draw() {
@@ -189,7 +188,8 @@ function draw() {
 
   iterate_cells();
 
-  if (frameCount > 5) { noLoop(); }
+  /* Iterate a number of times before stopping - while testing */
+  // if (frameCount > 50) { noLoop(); }
 }
 
 /*
