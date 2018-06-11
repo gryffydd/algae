@@ -16,7 +16,7 @@
  * two-dimensional array `(index = y * width +x)`.
  */
 
-var WIDTH = 20;
+var WIDTH = 120;
 var HEIGHT = 20;
 var cells = new Array(WIDTH * HEIGHT);
 
@@ -80,8 +80,7 @@ function init_constants () {
       NEIGHBOUR_OFFSET[x + y * wl] = (x - 2 + (y - 2) * WIDTH + cells.length) % cells.length;
       NEIGHBOUR_WEIGHT[x + y * wl] = WEIGHT[x] * WEIGHT[y];
       sum += WEIGHT[x] * WEIGHT[y];
-
-      print(NEIGHBOUR_OFFSET[x + y * wl] + ' -> ' + NEIGHBOUR_WEIGHT[x + y * wl]);
+      // print(NEIGHBOUR_OFFSET[x + y * wl] + ' -> ' + NEIGHBOUR_WEIGHT[x + y * wl]);
     }
   }
   NEIGHBOUR_WEIGHT_TOTAL = sum;
@@ -159,9 +158,17 @@ function iterate_cells () {
  */
 
 var CELL_SIZE = 10;
-var TRIBE_COLOUR = [ "#000000",
-    "#0000FF", "#00FF00", "#00FFFF", "#FF0000", "#FF00FF", "#FFFF00" ];
 
+function cell_colour (cell) {
+  var level = 255 - (256 / MAX_AGE) * cell.age;
+  var red = 0;
+  var green = 0;
+  var blue = 0;
+  if ((cell.tribe & 4) > 0) { red = level; }
+  if ((cell.tribe & 2) > 0) { green = level; }
+  if ((cell.tribe & 1) > 0) { blue = level; }
+  return [red, green, blue];
+}
 
 /*
  * This is the guts of the display of the current state of the list of cells
@@ -182,7 +189,7 @@ function draw() {
   for (var i = 0; i < cells.length; i++) {
     x = (i % WIDTH) * CELL_SIZE;
     y = floor(i / WIDTH) * CELL_SIZE;
-    fill(TRIBE_COLOUR[cells[i].tribe]);
+    fill(cell_colour(cells[i]));
     rect(x, y, CELL_SIZE, CELL_SIZE);
   }
 
