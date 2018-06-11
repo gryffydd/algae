@@ -76,9 +76,9 @@ function init_cells () {
    * overwriting a previous placement
    */
   for (var t = 1; t <= MAX_TRIBE; t++) {
-    i = random(cells.length);
+    i = floor(random(cells.length));
     print(i);
-    //;;  ; cells[i].spawn(t);
+    cells[i].spawn(t);
   }
 }
 
@@ -87,10 +87,8 @@ function init_cells () {
  */
 
 var CELL_SIZE = 10;
-var TRIBE_COLOUR = [ color(  0,   0,   0),
-  color(  0,   0, 255), color(  0, 255,   0), color(  0, 255, 255),
-  color(255,   0,   0), color(255,   0, 255), color(255, 255,   0)
-];
+var TRIBE_COLOUR = [ "#000000", "#0000FF", "#00FF00", "#00FFFF",
+    "#FF0000", "#FF00FF", "#FFFF00" ];
 
 
 function setup() {
@@ -113,12 +111,10 @@ function setup() {
 
 function draw() {
   for (var i = 0; i < cells.length; i++) {
-    x = i % WIDTH;
-    y = i / WIDTH;
-    print(x, y, cells[i].age);
-//    fill(TRIBE_COLOUR[cells[i].age]);
-//    rect(x, y, 3, 3);
-
+    x = (i % WIDTH) * CELL_SIZE;
+    y = floor(i / WIDTH) * CELL_SIZE;
+    fill(TRIBE_COLOUR[cells[i].tribe]);
+    rect(x, y, CELL_SIZE, CELL_SIZE);
   }
 }
 
