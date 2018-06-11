@@ -30,6 +30,7 @@ var cells = new Array(WIDTH * HEIGHT);
  * The maximum age was intened to clear space for regrowth.  It didn't have
  * this effect, but it did look cool, so I am keeping it.
  */
+
 var MAX_AGE = 64;
 
 /* 
@@ -37,6 +38,7 @@ var MAX_AGE = 64;
  * grow in/on it.  Again this didn't happen as expected, but that is why code
  * simulations.  Initially, there are no tribes or empty space, hence zero.
  */
+
 var NO_TRIBE = 0;
 var MAX_TRIBE = 6;
 
@@ -60,6 +62,33 @@ function Cell () {
 
 
 /*
+ * Neighbours are the cells from +/- 2 cells around a cell.
+ * The neighbour weight is described above, weight could be generated
+ * as the count of heads/tails permutations over 4 coin tosses.
+ */
+
+var WEIGHT = [1, 4, 6, 4, 1]
+var NEIGHBOUR_OFFSET = new Array(WEIGHT.length * WEIGHT.length);
+var NEIGHBOUR_WEIGHT = new Array(WEIGHT.length * WEIGHT.length);
+var NEIGHBOUR_WEIGHT_TOTAL = 256; /* This will be recalculated in init_constants */
+
+function init_constants () {
+  var wl = WEIGHT.length;
+  var sum = 0;
+  for (var x = 0; x < wl; x++) {
+    for (var y = 0; y < wl; y++) {
+      NEIGHBOUR_OFFSET[x + y * wl] = (x - 2 + (y - 2) * WIDTH + cells.length) % cells.length;
+      NEIGHBOUR_WEIGHT[x + y * wl] = WEIGHT[x] * WEIGHT[y];
+      sum += WEIGHT[x] * WEIGHT[y];
+
+      print(NEIGHBOUR_OFFSET[x + y * wl] + ' -> ' + NEIGHBOUR_WEIGHT[x + y * wl]);
+    }
+  }
+  NEIGHBOUR_WEIGHT_TOTAL = sum;
+}
+
+
+/*
  * Initialise the space.  I initially had 3 colours and randomly created 10
  * cells with a random colour.  This time I am going to create MAX_TRIBE (6)
  * random points, with one for each tribe.
@@ -77,36 +106,77 @@ function init_cells () {
    */
   for (var t = 1; t <= MAX_TRIBE; t++) {
     i = floor(random(cells.length));
-    print(i);
+    // print(i);
     cells[i].spawn(t);
   }
 }
+
+function iterate_cells () {
+  print("frameCount: " + frameCount);
+  var new_cells = new Array(cells.length);
+  var tribe_weight = new Array(MAX_TRIBE + 1);
+
+  /* For each cell work out what happens */
+  for (var c = 0; c < cells.length; c++) {
+    new_cells[c] = new Cell();
+    /* Zero the tribe weights and the sum */
+    for (var t = 0; t < tribe_weight.length; t++) {
+      tribe_weight[t] = 0;
+    }
+    var sum = 0;
+    for (var n = 0; n < NEIGHBOUR_OFFSET.length; n++) {
+//      print(c);
+//      print(n);
+//      print(NEIGHBOUR_OFFSET[n]);
+//      print((c + NEIGHBOUR_OFFSET[n]) % cells.length);
+//      print(cells[(c + NEIGHBOUR_OFFSET[n]) % cells.length]);
+      var nc = cells[(c + NEIGHBOUR_OFFSET[n]) % cells.length];
+      tribe_weight[nc.tribe] += NEIGHBOUR_WEIGHT[n];
+    }
+    var which_tribe = random(NEIGHBOUR_WEIGHT_TOTAL);
+    for (var t = 0; t < tribe_weight.length; t++) {
+      which_tribe -= tribe_weight[t];
+      if (which_tribe < 0) {
+        if (t == NO_TRIBE || cells[c].tribe == t) {
+          new_cells[c].age = cells[c].age;
+          new_cells[c].survived();
+        } else {
+          new_cells[c].spawn(t); 
+        }
+        print('Cell: ' + c + ', Tribe: ' + t + ' -> ' + tribe_weight[t]);
+        break;
+      }
+    }
+  }
+  cells = new_cells;
+}
+
+
+/*
+ * These are variables/constants related to the display of the cells
+ */
+
+var CELL_SIZE = 10;
+var TRIBE_COLOUR = [ "#000000",
+    "#0000FF", "#00FF00", "#00FFFF", "#FF0000", "#FF00FF", "#FFFF00" ];
+
 
 /*
  * This is the guts of the display of the current state of the list of cells
  */
 
-var CELL_SIZE = 10;
-var TRIBE_COLOUR = [ "#000000", "#0000FF", "#00FF00", "#00FFFF",
-    "#FF0000", "#FF00FF", "#FFFF00" ];
-
 
 function setup() {
   createCanvas(WIDTH * CELL_SIZE, HEIGHT * CELL_SIZE);
 
-  background(51); /* 80% black or 20% white, depending on how you think about it */
-
-  /* write a message to show this works */
-  fill("#00FF00");
-  textSize(50);
-  textAlign(CENTER, CENTER);
-  text("algae", width / 2, height / 2);
+  /* Initialise constants that can be determined programtically */
+  init_constants();
 
   /* Initialise the environment - put down 6 random tribes */
   init_cells();
 
   /* Until we get this right, set noLoop();*/
-  noLoop();
+  //noLoop();
 }
 
 function draw() {
@@ -116,6 +186,10 @@ function draw() {
     fill(TRIBE_COLOUR[cells[i].tribe]);
     rect(x, y, CELL_SIZE, CELL_SIZE);
   }
+
+  iterate_cells();
+
+  if (frameCount > 5) { noLoop(); }
 }
 
 /*
