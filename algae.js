@@ -38,6 +38,7 @@ var MAX_AGE = 64;
  * simulations.  Initially, there are no tribes or empty space, hence zero.
  */
 var NO_TRIBE = 0;
+var MAX_TRIBE = 6;
 
 function Cell () {
   this.tribe = NO_TRIBE;
@@ -58,13 +59,69 @@ function Cell () {
 }
 
 
+/*
+ * Initialise the space.  I initially had 3 colours and randomly created 10
+ * cells with a random colour.  This time I am going to create MAX_TRIBE (6)
+ * random points, with one for each tribe.
+ */
+
+function init_cells () {
+  /* Fill with empty cells */
+  for (var i = 0; i < cells.length; i++) {
+    cells[i] = new Cell();
+  }
+
+  /*
+   * Place one tribe randomly in the space, note there is a possibility of
+   * overwriting a previous placement
+   */
+  for (var t = 1; t <= MAX_TRIBE; t++) {
+    i = random(cells.length);
+    print(i);
+    //;;  ; cells[i].spawn(t);
+  }
+}
+
+/*
+ * This is the guts of the display of the current state of the list of cells
+ */
+
+var CELL_SIZE = 10;
+var TRIBE_COLOUR = [ color(  0,   0,   0),
+  color(  0,   0, 255), color(  0, 255,   0), color(  0, 255, 255),
+  color(255,   0,   0), color(255,   0, 255), color(255, 255,   0)
+];
+
+
 function setup() {
-  createCanvas(200, 50);
-  textSize(30);
-  textAlign(CENTER);
-  background(204);
+  createCanvas(WIDTH * CELL_SIZE, HEIGHT * CELL_SIZE);
+
+  background(51); /* 80% black or 20% white, depending on how you think about it */
+
+  /* write a message to show this works */
+  fill("#00FF00");
+  textSize(50);
+  textAlign(CENTER, CENTER);
   text("algae", width / 2, height / 2);
+
+  /* Initialise the environment - put down 6 random tribes */
+  init_cells();
+
+  /* Until we get this right, set noLoop();*/
+  noLoop();
 }
 
 function draw() {
+  for (var i = 0; i < cells.length; i++) {
+    x = i % WIDTH;
+    y = i / WIDTH;
+    print(x, y, cells[i].age);
+//    fill(TRIBE_COLOUR[cells[i].age]);
+//    rect(x, y, 3, 3);
+
+  }
 }
+
+/*
+ * ---- End of Javascript ----
+ */
