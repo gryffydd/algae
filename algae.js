@@ -17,7 +17,7 @@
  */
 
 var WIDTH = 80;
-var HEIGHT = 30;
+var HEIGHT = 60;
 var TIC = 0;
 var TOC = 1;
 
