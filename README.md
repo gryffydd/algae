@@ -10,6 +10,18 @@ Delphi.
 Download https://github.com/processing/p5.js/releases/download/0.6.1/p5.zip
 or a later one if that is your preference.
 
+Open algae.html in your web browser.
+
+### Quick Setup
+```
+git clone https://github.com/gryffydd/algae
+cd algae
+
+# get p5.js dependancy
+wget https://github.com/processing/p5.js/releases/download/0.6.1/p5.js
+```
+
+
 ## History
 First written in Delphi using Conway's Game of Life as inspiration.
 The implementation made pretty pictures that (initially) looked like algae.
