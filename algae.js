@@ -13,18 +13,13 @@
 
 /*
  * We will use a physical one-dimensional array that is referenced as a logical
- * two-dimensional array `(index = y * width +x)`.
+ * two-dimensional array `(index = y * width + x)`.
  */
 
-var WIDTH = 120;
-var HEIGHT = 20;
-var cells = new Array(WIDTH * HEIGHT);
-
-/*
- * The idea of a cell is that it has a 'Tribe' and an 'Age'.  In the earlier
- * version memory was scarce and so the cell was represented in bytes.  Now
- * we no longer care because we have memory to burn, so this will be an Object.
- */
+var WIDTH = 80;
+var HEIGHT = 30;
+var TIC = 0;
+var TOC = 1;
 
 /* 
  * The maximum age was intened to clear space for regrowth.  It didn't have
@@ -35,12 +30,18 @@ var MAX_AGE = 64;
 
 /* 
  * The idea of Algae was that there was a clear petri dish and things would
- * grow in/on it.  Again this didn't happen as expected, but that is why code
- * simulations.  Initially, there are no tribes or empty space, hence zero.
+ * grow in/on it.  Again this didn't happen as expected, but that is why we code
+ * simulations.  Initially, there are no tribes, just empty space, hence zero.
  */
 
 var NO_TRIBE = 0;
 var MAX_TRIBE = 6;
+
+/*
+ * The idea of a cell is that it has a 'Tribe' and an 'Age'.  In the earlier
+ * version memory was scarce and so the cell was represented in bytes.  Now
+ * we no longer care because we have memory to burn, so this will be an Object.
+ */
 
 function Cell () {
   this.tribe = NO_TRIBE;
@@ -60,6 +61,32 @@ function Cell () {
   }
 }
 
+/*
+ * This function generates a plate of empty cells.
+ */
+
+function empty_plate (width, height) {
+  var plate = new Array(width * height);
+  for (var c = 0; c < plate.length; c++) {
+    plate[c] = new Cell();
+  }
+  return plate;
+}
+
+/*
+ * Initialise the space.  I initially had 3 colours and randomly created 10
+ * cells with a random colour.  This time I am going to create MAX_TRIBE (6)
+ * random points, with one for each tribe.
+ */
+
+function seed_plate (plate) {
+  for (var t = 1; t <= MAX_TRIBE; t++) {
+    plate[floor(random(plate.length))].spawn(t);
+  }
+}
+
+var CELLS = new Array(empty_plate(WIDTH, HEIGHT), empty_plate(WIDTH, HEIGHT));
+var cells = CELLS[TIC];
 
 /*
  * Neighbours are the cells from +/- 2 cells around a cell.
@@ -74,44 +101,19 @@ var NEIGHBOUR_WEIGHT_TOTAL = 256; /* This will be recalculated in init_constants
 
 function init_constants () {
   var wl = WEIGHT.length;
+  var wl2 = floor(wl / 2);
   var sum = 0;
   for (var x = 0; x < wl; x++) {
     for (var y = 0; y < wl; y++) {
-      NEIGHBOUR_OFFSET[x + y * wl] = (x - 2 + (y - 2) * WIDTH + cells.length) % cells.length;
+      NEIGHBOUR_OFFSET[x + y * wl] = (x - wl2 + (y - wl2) * WIDTH + cells.length) % cells.length;
       NEIGHBOUR_WEIGHT[x + y * wl] = WEIGHT[x] * WEIGHT[y];
       sum += WEIGHT[x] * WEIGHT[y];
-      // print(NEIGHBOUR_OFFSET[x + y * wl] + ' -> ' + NEIGHBOUR_WEIGHT[x + y * wl]);
     }
   }
   NEIGHBOUR_WEIGHT_TOTAL = sum;
 }
 
-
-/*
- * Initialise the space.  I initially had 3 colours and randomly created 10
- * cells with a random colour.  This time I am going to create MAX_TRIBE (6)
- * random points, with one for each tribe.
- */
-
-function init_cells () {
-  /* Fill with empty cells */
-  for (var i = 0; i < cells.length; i++) {
-    cells[i] = new Cell();
-  }
-
-  /*
-   * Place one tribe randomly in the space, note there is a possibility of
-   * overwriting a previous placement
-   */
-  for (var t = 1; t <= MAX_TRIBE; t++) {
-    i = floor(random(cells.length));
-    // print(i);
-    cells[i].spawn(t);
-  }
-}
-
 function iterate_cells () {
-  print("frameCount: " + frameCount);
   var new_cells = new Array(cells.length);
   var tribe_weight = new Array(MAX_TRIBE + 1);
 
@@ -142,7 +144,6 @@ function iterate_cells () {
         } else {
           new_cells[c].spawn(t); 
         }
-        // print('Cell: ' + c + ', Tribe: ' + t + ' -> ' + tribe_weight[t]);
         break;
       }
     }
@@ -182,7 +183,7 @@ function setup() {
   init_constants();
 
   /* Initialise the environment - put down 6 random tribes */
-  init_cells();
+  seed_plate(CELLS[TIC]);
 }
 
 function draw() {
