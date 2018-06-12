@@ -52,12 +52,27 @@ function Cell () {
     this.age = 0;
   }
 
-  this.survived = function () {
-    this.age += 1;
+  this.survived = function (cell) {
+    this.tribe = cell.tribe;
+    this.age = cell.age + 1;
     if (this.age >= MAX_AGE) {
       this.tribe = NO_TRIBE;
       this.age = 0;
     }
+  }
+
+  this.tribe_colour = function (level) {
+    var colour = [0, 0, 0];
+    var mask = [4, 2, 1];
+    for (var c = 0; c < colour.length; c++) {
+      if ((this.tribe & mask[c]) > 0) { colour[c] = level; }
+    }
+    return colour;
+  }
+
+  this.colour = function () {
+    var level = 255 - (256 / MAX_AGE) * this.age;
+    return this.tribe_colour(level);
   }
 }
 
@@ -86,7 +101,6 @@ function seed_plate (plate) {
 }
 
 var CELLS = new Array(empty_plate(WIDTH, HEIGHT), empty_plate(WIDTH, HEIGHT));
-var cells = CELLS[TIC];
 
 /*
  * Neighbours are the cells from +/- 2 cells around a cell.
@@ -97,36 +111,51 @@ var cells = CELLS[TIC];
 var WEIGHT = [1, 4, 6, 4, 1]
 var NEIGHBOUR_OFFSET = new Array(WEIGHT.length * WEIGHT.length);
 var NEIGHBOUR_WEIGHT = new Array(WEIGHT.length * WEIGHT.length);
-var NEIGHBOUR_WEIGHT_TOTAL = 256; /* This will be recalculated in init_constants */
+var NEIGHBOUR_WEIGHT_TOTAL; /* This will be calculated in init_weights */
 
-function init_constants () {
+function init_weights () {
+  var cl = CELLS[TIC].length;
   var wl = WEIGHT.length;
   var wl2 = floor(wl / 2);
-  var sum = 0;
+  var w;
+  NEIGHBOUR_WEIGHT_TOTAL = 0;
   for (var x = 0; x < wl; x++) {
     for (var y = 0; y < wl; y++) {
-      NEIGHBOUR_OFFSET[x + y * wl] = (x - wl2 + (y - wl2) * WIDTH + cells.length) % cells.length;
-      NEIGHBOUR_WEIGHT[x + y * wl] = WEIGHT[x] * WEIGHT[y];
-      sum += WEIGHT[x] * WEIGHT[y];
+      NEIGHBOUR_OFFSET[x + y * wl] = (x - wl2 + (y - wl2) * WIDTH + cl) % cl;
+      w = WEIGHT[x] * WEIGHT[y];
+      NEIGHBOUR_WEIGHT[x + y * wl] = w;
+      NEIGHBOUR_WEIGHT_TOTAL += w;
     }
   }
-  NEIGHBOUR_WEIGHT_TOTAL = sum;
 }
 
+/*
+ * A little function to set an array with all zeros
+ */
+
+function zero_array (a) {
+  for (i = 0; i < a.length; i++) {
+    a[i] = 0;
+  }
+}
+
+/*
+ * This is the function that does all the work.  It calculates the probability
+ * of the next generation of cells based on proximity to other cells.
+ */
+
+
 function iterate_cells () {
-  var new_cells = new Array(cells.length);
+  var cells = CELLS[TIC];
+  var new_cells = CELLS[TOC];
+
   var tribe_weight = new Array(MAX_TRIBE + 1);
 
   /* For each cell work out what happens */
   for (var c = 0; c < cells.length; c++) {
-    new_cells[c] = new Cell();
-    new_cells[c].tribe = cells[c].tribe;
-    new_cells[c].age = cells[c].age;
-
     /* Zero the tribe weights */
-    for (var t = 0; t < tribe_weight.length; t++) {
-      tribe_weight[t] = 0;
-    }
+    zero_array(tribe_weight);
+
     /* Sum the weight of the neighbours */
     for (var n = 0; n < NEIGHBOUR_OFFSET.length; n++) {
       var nc = cells[(c + NEIGHBOUR_OFFSET[n]) % cells.length];
@@ -134,13 +163,12 @@ function iterate_cells () {
     }
 
     /* Pick a random point on the distribution */
-
     var which_tribe = random(NEIGHBOUR_WEIGHT_TOTAL);
     for (var t = 0; t < tribe_weight.length; t++) {
       which_tribe -= tribe_weight[t];
       if (which_tribe < 0) {
         if (t == NO_TRIBE || cells[c].tribe == t) {
-          new_cells[c].survived();
+          new_cells[c].survived(cells[c]);
         } else {
           new_cells[c].spawn(t); 
         }
@@ -149,8 +177,9 @@ function iterate_cells () {
     }
   }
 
-  /* Point the cells array to the new array */
-  cells = new_cells;
+  /* Swap the arrays of interest with a simple TIC/TOC switch */
+  TIC = TOC;
+  TOC = 1 - TIC;
 }
 
 
@@ -180,17 +209,18 @@ function setup() {
   createCanvas(WIDTH * CELL_SIZE, HEIGHT * CELL_SIZE);
 
   /* Initialise constants that can be determined programtically */
-  init_constants();
+  init_weights();
 
   /* Initialise the environment - put down 6 random tribes */
   seed_plate(CELLS[TIC]);
 }
 
 function draw() {
+  var cells = CELLS[TIC];
   for (var i = 0; i < cells.length; i++) {
     x = (i % WIDTH) * CELL_SIZE;
     y = floor(i / WIDTH) * CELL_SIZE;
-    fill(cell_colour(cells[i]));
+    fill(cells[i].colour());
     rect(x, y, CELL_SIZE, CELL_SIZE);
   }
 
