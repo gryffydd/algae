@@ -17,7 +17,7 @@
  */
 
 var WIDTH = 80;
-var HEIGHT = 60;
+var HEIGHT = 40;
 var TIC = 0;
 var TOC = 1;
 
@@ -148,6 +148,7 @@ function zero_array (a) {
 function iterate_cells () {
   var cells = CELLS[TIC];
   var new_cells = CELLS[TOC];
+  var total_weight;
 
   var tribe_weight = new Array(MAX_TRIBE + 1);
 
@@ -162,8 +163,15 @@ function iterate_cells () {
       tribe_weight[nc.tribe] += NEIGHBOUR_WEIGHT[n];
     }
 
+    /* Square the weightings because you are more powerful with mates */
+    total_weight = 0
+    for (var t = 0; t < tribe_weight.length; t++) {
+      tribe_weight[t] *= tribe_weight[t];
+      total_weight += tribe_weight[t];
+    }
+
     /* Pick a random point on the distribution */
-    var which_tribe = random(NEIGHBOUR_WEIGHT_TOTAL);
+    var which_tribe = random(total_weight);
     for (var t = 0; t < tribe_weight.length; t++) {
       which_tribe -= tribe_weight[t];
       if (which_tribe < 0) {
