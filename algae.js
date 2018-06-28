@@ -36,6 +36,16 @@ var MAX_AGE = 64;
 
 var NO_TRIBE = 0;
 var MAX_TRIBE = 6;
+var tribe_weight = new Array(MAX_TRIBE + 1);
+
+function tribe_colour(tribe, level) {
+  var colour = [0, 0, 0];
+  var mask = [4, 2, 1];
+  for (var c = 0; c < colour.length; c++) {
+    if ((tribe & mask[c]) > 0) { colour[c] = level; }
+  }
+  return colour;
+}
 
 /*
  * The idea that with more of the surrounding cells occupied there should be
@@ -43,7 +53,7 @@ var MAX_TRIBE = 6;
  * weight.  I'll call this mate's rate.
  */
 
-var MATES_RATE = 1.0;
+var MATES_RATE = 1.1;
 
 /*
  * The idea of a cell is that it has a 'Tribe' and an 'Age'.  In the earlier
@@ -83,6 +93,12 @@ function Cell () {
     return this.tribe_colour(level);
   }
 }
+
+/*
+ * Keep a tally of the cells and their ages.  Plot it.
+ */
+
+var report = new Array(MAX_AGE * (MAX_TRIBE + 1))
 
 /*
  * This function generates a plate of empty cells.
@@ -158,7 +174,7 @@ function iterate_cells () {
   var new_cells = CELLS[TOC];
   var total_weight;
 
-  var tribe_weight = new Array(MAX_TRIBE + 1);
+  zero_array(report);
 
   /* For each cell work out what happens */
   for (var c = 0; c < cells.length; c++) {
@@ -171,7 +187,7 @@ function iterate_cells () {
       tribe_weight[nc.tribe] += NEIGHBOUR_WEIGHT[n];
     }
 
-    /* Square the weightings because you are more powerful with mates */
+    /* Exponentiate the weightings because you may be more powerful with mates */
     total_weight = 0
     for (var t = 0; t < tribe_weight.length; t++) {
       tribe_weight[t] = tribe_weight[t] ** MATES_RATE;
@@ -191,6 +207,9 @@ function iterate_cells () {
         break;
       }
     }
+
+    /* Count the cells and their ages */
+    report[new_cells[c].tribe * MAX_AGE + new_cells[c].age] += 1;
   }
 
   /* Swap the arrays of interest with a simple TIC/TOC switch */
@@ -205,24 +224,12 @@ function iterate_cells () {
 
 var CELL_SIZE = 10;
 
-function cell_colour (cell) {
-  var level = 255 - (256 / MAX_AGE) * cell.age;
-  var red = 0;
-  var green = 0;
-  var blue = 0;
-  if ((cell.tribe & 4) > 0) { red = level; }
-  if ((cell.tribe & 2) > 0) { green = level; }
-  if ((cell.tribe & 1) > 0) { blue = level; }
-  return [red, green, blue];
-}
-
 /*
  * This is the guts of the display of the current state of the list of cells
  */
 
-
 function setup() {
-  createCanvas(WIDTH * CELL_SIZE, HEIGHT * CELL_SIZE);
+  createCanvas(WIDTH * CELL_SIZE + 1, HEIGHT * CELL_SIZE + MAX_AGE + 20);
 
   /* Initialise constants that can be determined programtically */
   init_weights();
@@ -233,11 +240,27 @@ function setup() {
 
 function draw() {
   var cells = CELLS[TIC];
+  stroke(0);
   for (var i = 0; i < cells.length; i++) {
     x = (i % WIDTH) * CELL_SIZE;
     y = floor(i / WIDTH) * CELL_SIZE;
     fill(cells[i].colour());
     rect(x, y, CELL_SIZE, CELL_SIZE);
+  }
+
+  var base = (HEIGHT + 1) * CELL_SIZE + MAX_AGE;
+
+  for (var t = 1; t <= MAX_TRIBE; t++) {
+    fill(tribe_colour(t, 102));
+    noStroke();
+    rect((t - 1) * (MAX_AGE + CELL_SIZE) + CELL_SIZE, (HEIGHT + 1) * CELL_SIZE, MAX_AGE, MAX_AGE);
+    stroke(tribe_colour(t, 255));
+    var left = (t - 1) * (MAX_AGE + CELL_SIZE) + CELL_SIZE;
+    for (var a = 0; a < MAX_AGE; a++) {
+      if (report[t * MAX_AGE + a] > 0) {
+        line(left + a, base, left + a, max(base - MAX_AGE, base - report[t * MAX_AGE + a]));
+      }
+    }
   }
 
   iterate_cells();
