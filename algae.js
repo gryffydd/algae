@@ -38,6 +38,14 @@ var NO_TRIBE = 0;
 var MAX_TRIBE = 6;
 
 /*
+ * The idea that with more of the surrounding cells occupied there should be
+ * an advantage can be implimented with a exponential weighting of the tribe's
+ * weight.  I'll call this mate's rate.
+ */
+
+var MATES_RATE = 1.0;
+
+/*
  * The idea of a cell is that it has a 'Tribe' and an 'Age'.  In the earlier
  * version memory was scarce and so the cell was represented in bytes.  Now
  * we no longer care because we have memory to burn, so this will be an Object.
@@ -166,7 +174,7 @@ function iterate_cells () {
     /* Square the weightings because you are more powerful with mates */
     total_weight = 0
     for (var t = 0; t < tribe_weight.length; t++) {
-      tribe_weight[t] *= tribe_weight[t];
+      tribe_weight[t] = tribe_weight[t] ** MATES_RATE;
       total_weight += tribe_weight[t];
     }
 
