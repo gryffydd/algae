@@ -17,7 +17,7 @@
  */
 
 var WIDTH = 80;
-var HEIGHT = 40;
+var HEIGHT = 50;
 var TIC = 0;
 var TOC = 1;
 
@@ -38,14 +38,30 @@ var NO_TRIBE = 0;
 var MAX_TRIBE = 6;
 var tribe_weight = new Array(MAX_TRIBE + 1);
 
+/* This allows for a graduated colour scale from white to black at SHADES by two levels */
+var SHADES = 255 / 5;
+var STEPS = 255 / SHADES;
+var TOP_LEVEL = MAX_AGE + 2;
+
 function tribe_colour(tribe, level) {
   var colour = [0, 0, 0];
+  if (tribe == NO_TRIBE) { return colour; }
   var mask = [4, 2, 1];
+  var first = max(min(level, SHADES), 0) * STEPS;
+  var other = max(min((level - SHADES), SHADES), 0) * STEPS;
   for (var c = 0; c < colour.length; c++) {
-    if ((tribe & mask[c]) > 0) { colour[c] = level; }
+    if ((tribe & mask[c]) > 0) { colour[c] = first; } else { colour[c] = other; }
   }
   return colour;
 }
+
+/* These are the colours that are used for the report */
+var REPORT_BACKGROUND = 75;
+var REPORT_LINE = 30;
+var REPORT_DEAD = 20;
+
+var REPORT_TOP = (HEIGHT + 1) * CELL_SIZE;
+var REPORT_BASE = REPORT_TOP + MAX_AGE;
 
 /*
  * The idea that with more of the surrounding cells occupied there should be
@@ -74,23 +90,14 @@ function Cell () {
     this.tribe = cell.tribe;
     this.age = cell.age + 1;
     if (this.age >= MAX_AGE) {
+      /* Die anyway... */
       this.tribe = NO_TRIBE;
       this.age = 0;
     }
   }
 
-  this.tribe_colour = function (level) {
-    var colour = [0, 0, 0];
-    var mask = [4, 2, 1];
-    for (var c = 0; c < colour.length; c++) {
-      if ((this.tribe & mask[c]) > 0) { colour[c] = level; }
-    }
-    return colour;
-  }
-
   this.colour = function () {
-    var level = 255 - (256 / MAX_AGE) * this.age;
-    return this.tribe_colour(level);
+    return tribe_colour(this.tribe, TOP_LEVEL - this.age);
   }
 }
 
@@ -130,31 +137,28 @@ var CELLS = new Array(empty_plate(WIDTH, HEIGHT), empty_plate(WIDTH, HEIGHT));
  * Neighbours are the cells from +/- 2 cells around a cell.
  * The neighbour weight is described above, weight could be generated
  * as the count of heads/tails permutations over 4 coin tosses.
+ * WEIGHT = N! / (n! * (N-n)!)
  */
 
-var WEIGHT = [1, 4, 6, 4, 1]
+var WEIGHT = [1, 4, 6, 4, 1];
 var NEIGHBOUR_OFFSET = new Array(WEIGHT.length * WEIGHT.length);
 var NEIGHBOUR_WEIGHT = new Array(WEIGHT.length * WEIGHT.length);
-var NEIGHBOUR_WEIGHT_TOTAL; /* This will be calculated in init_weights */
 
 function init_weights () {
   var cl = CELLS[TIC].length;
   var wl = WEIGHT.length;
   var wl2 = floor(wl / 2);
   var w;
-  NEIGHBOUR_WEIGHT_TOTAL = 0;
   for (var x = 0; x < wl; x++) {
     for (var y = 0; y < wl; y++) {
       NEIGHBOUR_OFFSET[x + y * wl] = (x - wl2 + (y - wl2) * WIDTH + cl) % cl;
-      w = WEIGHT[x] * WEIGHT[y];
-      NEIGHBOUR_WEIGHT[x + y * wl] = w;
-      NEIGHBOUR_WEIGHT_TOTAL += w;
+      NEIGHBOUR_WEIGHT[x + y * wl] = WEIGHT[x] * WEIGHT[y];
     }
   }
 }
 
 /*
- * A little function to set an array with all zeros
+ * A little function to set an array to all zeros
  */
 
 function zero_array (a) {
@@ -167,7 +171,6 @@ function zero_array (a) {
  * This is the function that does all the work.  It calculates the probability
  * of the next generation of cells based on proximity to other cells.
  */
-
 
 function iterate_cells () {
   var cells = CELLS[TIC];
@@ -229,7 +232,7 @@ var CELL_SIZE = 10;
  */
 
 function setup() {
-  createCanvas(WIDTH * CELL_SIZE + 1, HEIGHT * CELL_SIZE + MAX_AGE + 20);
+  createCanvas(WIDTH * CELL_SIZE + 1, HEIGHT * CELL_SIZE + MAX_AGE + CELL_SIZE * 2);
 
   /* Initialise constants that can be determined programtically */
   init_weights();
@@ -248,18 +251,27 @@ function draw() {
     rect(x, y, CELL_SIZE, CELL_SIZE);
   }
 
+  /* Plot the reports */
+
   var base = (HEIGHT + 1) * CELL_SIZE + MAX_AGE;
 
   for (var t = 1; t <= MAX_TRIBE; t++) {
-    fill(tribe_colour(t, 102));
+    var still_alive = false;
+    fill(tribe_colour(t, REPORT_BACKGROUND));
     noStroke();
     rect((t - 1) * (MAX_AGE + CELL_SIZE) + CELL_SIZE, (HEIGHT + 1) * CELL_SIZE, MAX_AGE, MAX_AGE);
-    stroke(tribe_colour(t, 255));
+    stroke(tribe_colour(t, REPORT_LINE));
     var left = (t - 1) * (MAX_AGE + CELL_SIZE) + CELL_SIZE;
     for (var a = 0; a < MAX_AGE; a++) {
       if (report[t * MAX_AGE + a] > 0) {
+        still_alive = true;
         line(left + a, base, left + a, max(base - MAX_AGE, base - report[t * MAX_AGE + a]));
       }
+    }
+    if (! still_alive) {
+      fill(tribe_colour(t, REPORT_DEAD));
+      noStroke();
+      rect((t - 1) * (MAX_AGE + CELL_SIZE) + CELL_SIZE, (HEIGHT + 1) * CELL_SIZE, MAX_AGE, MAX_AGE);
     }
   }
 
