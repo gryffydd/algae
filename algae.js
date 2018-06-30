@@ -18,6 +18,7 @@
 
 var WIDTH = 80;
 var HEIGHT = 50;
+var CELL_SIZE = 10;
 var TIC = 0;
 var TOC = 1;
 
@@ -220,16 +221,43 @@ function iterate_cells () {
   TOC = 1 - TIC;
 }
 
-
-/*
- * These are variables/constants related to the display of the cells
- */
-
-var CELL_SIZE = 10;
-
 /*
  * This is the guts of the display of the current state of the list of cells
  */
+
+function draw_cells (cells) {
+  var cells = CELLS[TIC];
+  stroke(0);
+  for (var i = 0; i < cells.length; i++) {
+    var x = (i % WIDTH) * CELL_SIZE;
+    var y = floor(i / WIDTH) * CELL_SIZE;
+    fill(cells[i].colour());
+    rect(x, y, CELL_SIZE, CELL_SIZE);
+  }
+}
+
+function draw_report (report) {
+  for (var t = 1; t <= MAX_TRIBE; t++) {
+    var still_alive = false;
+    var left = (t - 1) * (MAX_AGE + CELL_SIZE) + CELL_SIZE;
+    fill(tribe_colour(t, REPORT_BACKGROUND));
+    noStroke();
+    rect(left, REPORT_TOP, MAX_AGE, MAX_AGE);
+    stroke(tribe_colour(t, REPORT_LINE));
+    for (var a = 0; a < MAX_AGE; a++) {
+      var pop_age = report[t * MAX_AGE + a];
+      if (pop_age > 0) {
+        still_alive = true;
+        line(left + a, REPORT_BASE, left + a, max(REPORT_TOP, REPORT_BASE - pop_age));
+      }
+    }
+    if (! still_alive) {
+      fill(tribe_colour(t, REPORT_DEAD));
+      noStroke();
+      rect(left, REPORT_TOP, MAX_AGE, MAX_AGE);
+    }
+  }
+}
 
 function setup() {
   createCanvas(WIDTH * CELL_SIZE + 1, HEIGHT * CELL_SIZE + MAX_AGE + CELL_SIZE * 2);
@@ -242,38 +270,8 @@ function setup() {
 }
 
 function draw() {
-  var cells = CELLS[TIC];
-  stroke(0);
-  for (var i = 0; i < cells.length; i++) {
-    x = (i % WIDTH) * CELL_SIZE;
-    y = floor(i / WIDTH) * CELL_SIZE;
-    fill(cells[i].colour());
-    rect(x, y, CELL_SIZE, CELL_SIZE);
-  }
-
-  /* Plot the reports */
-
-  var base = (HEIGHT + 1) * CELL_SIZE + MAX_AGE;
-
-  for (var t = 1; t <= MAX_TRIBE; t++) {
-    var still_alive = false;
-    fill(tribe_colour(t, REPORT_BACKGROUND));
-    noStroke();
-    rect((t - 1) * (MAX_AGE + CELL_SIZE) + CELL_SIZE, (HEIGHT + 1) * CELL_SIZE, MAX_AGE, MAX_AGE);
-    stroke(tribe_colour(t, REPORT_LINE));
-    var left = (t - 1) * (MAX_AGE + CELL_SIZE) + CELL_SIZE;
-    for (var a = 0; a < MAX_AGE; a++) {
-      if (report[t * MAX_AGE + a] > 0) {
-        still_alive = true;
-        line(left + a, base, left + a, max(base - MAX_AGE, base - report[t * MAX_AGE + a]));
-      }
-    }
-    if (! still_alive) {
-      fill(tribe_colour(t, REPORT_DEAD));
-      noStroke();
-      rect((t - 1) * (MAX_AGE + CELL_SIZE) + CELL_SIZE, (HEIGHT + 1) * CELL_SIZE, MAX_AGE, MAX_AGE);
-    }
-  }
+  draw_cells(CELLS[TIC]);
+  draw_report(report);
 
   iterate_cells();
 
