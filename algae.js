@@ -22,12 +22,27 @@ var CELL_SIZE = 10;
 var TIC = 0;
 var TOC = 1;
 
+/* A helper function to set an array to a value */
+
+function set_array (a, v) {
+  for (i = 0; i < a.length; i++) { a[i] = v; }
+}
+
 /* 
  * The maximum age was intened to clear space for regrowth.  It didn't have
  * this effect, but it did look cool, so I am keeping it.
  */
 
 var MAX_AGE = 64;
+var age_advantage = new Array(MAX_AGE);
+
+function init_age_advantage () {
+  set_array(age_advantage, 1);
+  for (var i = 0; i < age_advantage.length; i++) {
+    // age_advantage[i] = 1 + floor(min(i + 24, MAX_AGE - i) / 8);
+    age_advantage[i] = 1 + floor((MAX_AGE - i) / 8);
+  }
+}
 
 /* 
  * The idea of Algae was that there was a clear petri dish and things would
@@ -70,7 +85,7 @@ var REPORT_BASE = REPORT_TOP + MAX_AGE;
  * weight.  I'll call this mate's rate.
  */
 
-var MATES_RATE = 1.1;
+var MATES_RATE = 1.3;
 
 /*
  * The idea of a cell is that it has a 'Tribe' and an 'Age'.  In the earlier
@@ -149,22 +164,11 @@ function init_weights () {
   var cl = CELLS[TIC].length;
   var wl = WEIGHT.length;
   var wl2 = floor(wl / 2);
-  var w;
   for (var x = 0; x < wl; x++) {
     for (var y = 0; y < wl; y++) {
       NEIGHBOUR_OFFSET[x + y * wl] = (x - wl2 + (y - wl2) * WIDTH + cl) % cl;
       NEIGHBOUR_WEIGHT[x + y * wl] = WEIGHT[x] * WEIGHT[y];
     }
-  }
-}
-
-/*
- * A little function to set an array to all zeros
- */
-
-function zero_array (a) {
-  for (i = 0; i < a.length; i++) {
-    a[i] = 0;
   }
 }
 
@@ -178,17 +182,17 @@ function iterate_cells () {
   var new_cells = CELLS[TOC];
   var total_weight;
 
-  zero_array(report);
+  set_array(report, 0);
 
   /* For each cell work out what happens */
   for (var c = 0; c < cells.length; c++) {
     /* Zero the tribe weights */
-    zero_array(tribe_weight);
+    set_array(tribe_weight, 0);
 
     /* Sum the weight of the neighbours */
     for (var n = 0; n < NEIGHBOUR_OFFSET.length; n++) {
       var nc = cells[(c + NEIGHBOUR_OFFSET[n]) % cells.length];
-      tribe_weight[nc.tribe] += NEIGHBOUR_WEIGHT[n];
+      tribe_weight[nc.tribe] += NEIGHBOUR_WEIGHT[n] * age_advantage[nc.age];
     }
 
     /* Exponentiate the weightings because you may be more powerful with mates */
@@ -264,6 +268,7 @@ function setup() {
 
   /* Initialise constants that can be determined programtically */
   init_weights();
+  init_age_advantage();
 
   /* Initialise the environment - put down 6 random tribes */
   seed_plate(CELLS[TIC]);
