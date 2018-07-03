@@ -8,7 +8,7 @@ Delphi.
 
 ## Installation
 Download https://github.com/processing/p5.js/releases/download/0.6.1/p5.zip
-or a later one if that is your preference.
+or a later one if that is your preference.  Version 0.6.1 (April 27, 2018).
 
 Open algae.html in your web browser.
 
@@ -17,7 +17,7 @@ Open algae.html in your web browser.
 git clone https://github.com/gryffydd/algae
 cd algae
 
-# get p5.js dependancy
+# get p5.js dependancy - Version 0.6.1 (April 27, 2018)
 wget https://github.com/processing/p5.js/releases/download/0.6.1/p5.js
 ```
 
@@ -48,7 +48,7 @@ If you can sum the squares, you can sum something less than a square, therefore
 exponents.  Calling this Mate's Rate (`MATES_RATE`) it was found that a very
 small advantage (`1.1`) could bring on this behaviour.  A value of `1.2` was
 not that different to `2.0` in the way that the cells 'clumped' together.
-Interstingly, value of less than `1.0` caused an extreme version of the difused
+Interstingly, value of less than `1.0` caused an extreme version of the diffused
 behaviour shown in the 'Simple Weighted' initial version.
 
 ### Aging and Weakening
@@ -57,7 +57,7 @@ effect.  Without Exponential advantage, younger cells that were weaker had the
 same characteristic as the 'Sum of the Squares' approach forming barriers or
 rather borders around the territory claimed.  Older Stronger cells would hold
 on to territory and the configuration was pretty stable.  A variant that had
-Older Weaker cells created the difused behaviour as previously observed.
+Older Weaker cells created the diffused behaviour as previously observed.
 The really interesting behaviour that has been created at the time of this edit
 is a simple `1 + (MAX_AGE - Age) / 8` (as an intger) with a `MATES_RATE = 1.5`.
 This creates a field of cells that hold for a while until they are overrun by
@@ -90,3 +90,5 @@ project.  I probably got a Borland Delphi compiler for Christmas...
  * https://p5js.org/
  * https://en.wikipedia.org/wiki/Algae
  * https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life
+
+----
