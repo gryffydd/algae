@@ -58,6 +58,10 @@ function adjacent_tribe (tribe, step) {
   return (tribe + step - 1) % MAX_TRIBE + 1;
 }
 
+function step_weight (step) {
+  return 2 - (step / (MAX_TRIBE - 1));
+}
+
 function set_tribal_advantage (attacker, defender, value) {
   tribal_advantage[attacker * (MAX_TRIBE + 1) + defender] = value;
 }
@@ -66,7 +70,7 @@ function init_tribal_advantage () {
   set_array(tribal_advantage, 1);
   for (t = 1; t <= MAX_TRIBE; t++) {
     for (s = 1; s < MAX_TRIBE; s++) {
-      set_tribal_advantage(t, adjacent_tribe(t, s), 2 - (s / (MAX_TRIBE - 1)) * 0.2);
+      set_tribal_advantage(t, adjacent_tribe(t, s), step_weight(s));
     }
   }
 }
