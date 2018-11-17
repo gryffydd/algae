@@ -39,7 +39,6 @@ var age_advantage = new Array(MAX_AGE);
 function init_age_advantage () {
   set_array(age_advantage, 1);
   for (var i = 0; i < age_advantage.length; i++) {
-    // age_advantage[i] = 1 + floor(min(i + 24, MAX_AGE - i) / 8);
     age_advantage[i] = 1 + floor((MAX_AGE - i) / 8);
   }
 }
@@ -53,6 +52,15 @@ function init_age_advantage () {
 var NO_TRIBE = 0;
 var MAX_TRIBE = 6;
 var tribe_weight = new Array(MAX_TRIBE + 1);
+var tribal_advantage = new Array((MAX_TRIBE + 1) * (MAX_TRIBE + 1));
+
+function init_tribal_advantage () {
+  set_array(tribal_advantage, 1);
+}
+
+function get_tribal_advantage (attacker, defender) {
+  return tribal_advantage[attacker * (MAX_TRIBE + 1) + defender];
+}
 
 /* This allows for a graduated colour scale from white to black at SHADES by two levels */
 var SHADES = 255 / 5;
@@ -105,8 +113,8 @@ function Cell () {
   this.survived = function (cell) {
     this.tribe = cell.tribe;
     this.age = cell.age + 1;
-    if (this.age >= MAX_AGE) {
-      /* Die anyway... */
+    if (this.tribe == NO_TRIBE || this.age >= MAX_AGE) {
+      /* Stay Dead or Die anyway... */
       this.tribe = NO_TRIBE;
       this.age = 0;
     }
@@ -186,6 +194,7 @@ function iterate_cells () {
 
   /* For each cell work out what happens */
   for (var c = 0; c < cells.length; c++) {
+    // console.log("frameCount: " + frameCount + "; CELL[" + c + "]: " + cells[c]);
     /* Zero the tribe weights */
     set_array(tribe_weight, 0);
 
@@ -196,11 +205,22 @@ function iterate_cells () {
     }
 
     /* Exponentiate the weightings because you may be more powerful with mates */
-    total_weight = 0
-    for (var t = 0; t < tribe_weight.length; t++) {
+    base_weight = 0;
+    total_weight = 0;
+    for (var t = 1; t < tribe_weight.length; t++) {
+      base_weight += tribe_weight[t];
+      // if (tribe_weight[t] > 0) { console.log("WAS: tribe_weight[" + t + "]: " + tribe_weight[t]); }
       tribe_weight[t] = tribe_weight[t] ** MATES_RATE;
+      // if (tribe_weight[t] > 0) { console.log("MATES: tribe_weight[" + t + "]: " + tribe_weight[t]); }
+      tribe_weight[t] *= get_tribal_advantage(t, cells[c].tribe);
+      // if (tribe_weight[t] > 0) { console.log("TRIBE: tribe_weight[" + t + "]: " + tribe_weight[t]); }
       total_weight += tribe_weight[t];
     }
+    /* Normalise the weight of the dead spaces */
+    // if (tribe_weight[0] > 0) { console.log("DEAD: tribe_weight[0]: " + tribe_weight[0]); }
+    tribe_weight[0] *= (total_weight / base_weight);
+    // if (tribe_weight[0] > 0) { console.log("NEW_DEAD: tribe_weight[0]: " + tribe_weight[0]); }
+    total_weight += tribe_weight[0];
 
     /* Pick a random point on the distribution */
     var which_tribe = random(total_weight);
@@ -269,6 +289,7 @@ function setup() {
   /* Initialise constants that can be determined programtically */
   init_weights();
   init_age_advantage();
+  init_tribal_advantage();
 
   /* Initialise the environment - put down 6 random tribes */
   seed_plate(CELLS[TIC]);
