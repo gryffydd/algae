@@ -54,8 +54,18 @@ var MAX_TRIBE = 6;
 var tribe_weight = new Array(MAX_TRIBE + 1);
 var tribal_advantage = new Array((MAX_TRIBE + 1) * (MAX_TRIBE + 1));
 
+function set_tribal_advantage (attacker, defender, value) {
+  tribal_advantage[attacker * (MAX_TRIBE + 1) + defender] = value;
+}
+
 function init_tribal_advantage () {
   set_array(tribal_advantage, 1);
+  set_tribal_advantage(1, 2, 2);
+  set_tribal_advantage(2, 3, 2);
+  set_tribal_advantage(3, 4, 2);
+  set_tribal_advantage(4, 5, 2);
+  set_tribal_advantage(5, 6, 2);
+  set_tribal_advantage(6, 1, 2);
 }
 
 function get_tribal_advantage (attacker, defender) {
@@ -194,7 +204,6 @@ function iterate_cells () {
 
   /* For each cell work out what happens */
   for (var c = 0; c < cells.length; c++) {
-    // console.log("frameCount: " + frameCount + "; CELL[" + c + "]: " + cells[c]);
     /* Zero the tribe weights */
     set_array(tribe_weight, 0);
 
@@ -209,17 +218,12 @@ function iterate_cells () {
     total_weight = 0;
     for (var t = 1; t < tribe_weight.length; t++) {
       base_weight += tribe_weight[t];
-      // if (tribe_weight[t] > 0) { console.log("WAS: tribe_weight[" + t + "]: " + tribe_weight[t]); }
       tribe_weight[t] = tribe_weight[t] ** MATES_RATE;
-      // if (tribe_weight[t] > 0) { console.log("MATES: tribe_weight[" + t + "]: " + tribe_weight[t]); }
       tribe_weight[t] *= get_tribal_advantage(t, cells[c].tribe);
-      // if (tribe_weight[t] > 0) { console.log("TRIBE: tribe_weight[" + t + "]: " + tribe_weight[t]); }
       total_weight += tribe_weight[t];
     }
     /* Normalise the weight of the dead spaces */
-    // if (tribe_weight[0] > 0) { console.log("DEAD: tribe_weight[0]: " + tribe_weight[0]); }
     tribe_weight[0] *= (total_weight / base_weight);
-    // if (tribe_weight[0] > 0) { console.log("NEW_DEAD: tribe_weight[0]: " + tribe_weight[0]); }
     total_weight += tribe_weight[0];
 
     /* Pick a random point on the distribution */
