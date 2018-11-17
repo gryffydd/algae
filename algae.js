@@ -54,18 +54,21 @@ var MAX_TRIBE = 6;
 var tribe_weight = new Array(MAX_TRIBE + 1);
 var tribal_advantage = new Array((MAX_TRIBE + 1) * (MAX_TRIBE + 1));
 
+function adjacent_tribe (tribe, step) {
+  return (tribe + step - 1) % MAX_TRIBE + 1;
+}
+
 function set_tribal_advantage (attacker, defender, value) {
   tribal_advantage[attacker * (MAX_TRIBE + 1) + defender] = value;
 }
 
 function init_tribal_advantage () {
   set_array(tribal_advantage, 1);
-  set_tribal_advantage(1, 2, 2);
-  set_tribal_advantage(2, 3, 2);
-  set_tribal_advantage(3, 4, 2);
-  set_tribal_advantage(4, 5, 2);
-  set_tribal_advantage(5, 6, 2);
-  set_tribal_advantage(6, 1, 2);
+  for (t = 1; t <= MAX_TRIBE; t++) {
+    for (s = 1; s < MAX_TRIBE; s++) {
+      set_tribal_advantage(t, adjacent_tribe(t, s), 2 - (s / (MAX_TRIBE - 1)) * 0.2);
+    }
+  }
 }
 
 function get_tribal_advantage (attacker, defender) {
