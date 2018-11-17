@@ -304,6 +304,15 @@ function setup() {
 
   /* Initialise the environment - put down 6 random tribes */
   seed_plate(CELLS[TIC]);
+
+  fill([204, 204, 204]);
+  noStroke();
+  /* Bar for the Age Advantage */
+  rect(496, 526, 128, 32);
+  /* Bar for the Mates Rates */
+  rect(656, 510, 32, 64);
+  /* Grid for the Tribal Advantage */
+  rect(720, 510, 64, 64);
 }
 
 function draw() {
