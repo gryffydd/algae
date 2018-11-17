@@ -7,8 +7,8 @@ at the problem space.  So initially, I want to replicate what I wrote in
 Delphi.
 
 ## Installation
-Download https://github.com/processing/p5.js/releases/download/0.6.1/p5.zip
-or a later one if that is your preference.  Version 0.6.1 (April 27, 2018).
+Download https://github.com/processing/p5.js/releases/download/0.7.2/p5.zip
+or a later one if that is your preference.  Version 0.7.2 (September 02, 2018).
 
 Open algae.html in your web browser.
 
@@ -17,8 +17,8 @@ Open algae.html in your web browser.
 git clone https://github.com/gryffydd/algae
 cd algae
 
-# get p5.js dependancy - Version 0.6.1 (April 27, 2018)
-wget https://github.com/processing/p5.js/releases/download/0.6.1/p5.js
+# get p5.js dependancy - Version 0.7.2 (September 02, 2018)
+wget https://github.com/processing/p5.js/releases/download/0.7.2/p5.js
 ```
 
 ## Recent History
