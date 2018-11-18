@@ -17,7 +17,7 @@
  */
 
 var WIDTH = 80;
-var HEIGHT = 50;
+var HEIGHT = 80;
 var CELL_SIZE = 10;
 var TIC = 0;
 var TOC = 1;
@@ -110,7 +110,7 @@ var REPORT_BASE = REPORT_TOP + MAX_AGE;
  * weight.  I'll call this mate's rate.
  */
 
-var MATES_RATE = 1.3;
+var MATES_RATE = 2;
 
 /*
  * The idea of a cell is that it has a 'Tribe' and an 'Age'.  In the earlier
@@ -244,6 +244,35 @@ function age_advantage_report (left, top) {
   return size;
 }
 
+function mates_rates_report (left, top) {
+  var size = 32;
+  var l = left + 2;
+  var t = top + 2;
+  var w = 30;
+  var h = 60;
+  var m = (2 - MATES_RATE) * 40 - 2;
+
+  fill([204, 204, 204]);
+  noStroke();
+  rect(left, top, size, size * 2);
+
+  fill([192, 192, 192]);
+  rect(l, t, w, h);
+
+  fill([160, 160, 160]);
+  rect(l, t + 42, w, h - 42);
+
+  fill([128, 128, 128]);
+  rect(l, t, w, 2);
+  rect(l, t + 20, w, 2);
+  rect(l, t + 40, w, 2);
+
+  fill([64, 64, 64]);
+  rect(l + 12, t + m, 6, 6);
+
+  return size;
+}
+
 function tribal_advantage_report (left, top) {
   var size = 64;
   var w = MAX_TRIBE + 1;
@@ -269,9 +298,6 @@ function tribal_advantage_report (left, top) {
 }
 
 function static_values_report () {
-  fill([204, 204, 204]);
-  noStroke();
-
   /* Top Left for the report graphics */
   var width = 64 + CELL_SIZE + 132 + CELL_SIZE + 32 + CELL_SIZE + 64;
   var left = (WIDTH - 1) * CELL_SIZE - width;
@@ -284,10 +310,9 @@ function static_values_report () {
   left += age_advantage_report(left, top + 16) + CELL_SIZE;
 
   /* Bar for the Mates Rates */
-  rect(left, 510, 32, 64);
+  left += mates_rates_report(left, top) + CELL_SIZE;
 
   /* Grid for the Tribal Advantage */
-  left += 32 + CELL_SIZE;
   left = tribal_advantage_report(left, top);
 }
 
