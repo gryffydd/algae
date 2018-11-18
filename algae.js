@@ -221,27 +221,74 @@ function neighbour_weight_report (left, top) {
   return size;
 }
 
+function age_advantage_report (left, top) {
+  var size = (MAX_AGE + 2) * 2;
+  var w = MAX_AGE;
+  var l = left + 2;
+  var t = top + 2;
+  var c;
+  var m = max(age_advantage);
+  var s = 2;
+  var h = 28;
+
+  fill([204, 204, 204]);
+  noStroke();
+  rect(left, top, size, 32);
+
+  for (var x = 0; x < w; x++) {
+      c = int((1 - (age_advantage[x] / m)) * 128) + 32;
+      fill([c, c, c]);
+      rect(l + x * s, t, s, h);
+  }
+
+  return size;
+}
+
+function tribal_advantage_report (left, top) {
+  var size = 64;
+  var w = MAX_TRIBE + 1;
+  var l = left + 2;
+  var t = top + 2;
+  var c;
+  var m = max(tribal_advantage);
+  var s = 10;
+
+  fill([204, 204, 204]);
+  noStroke();
+  rect(left, top, size, size);
+
+  for (var x = 1; x < w; x++) {
+    for (var y = 1; y < w; y++) {
+      c = int((1 - (tribal_advantage[x + y * w] / m)) * 128) + 32;
+      fill([c, c, c]);
+      rect(l + (x - 1) * s, t + (y - 1) * s, s, s);
+    }
+  }
+
+  return size;
+}
+
 function static_values_report () {
   fill([204, 204, 204]);
   noStroke();
 
-  /* Grid for the Neighbour Weight */
-  var left = (WIDTH - 1) * CELL_SIZE - (64 + 128 + 32 + 64 + 3 * CELL_SIZE);
+  /* Top Left for the report graphics */
+  var width = 64 + CELL_SIZE + 132 + CELL_SIZE + 32 + CELL_SIZE + 64;
+  var left = (WIDTH - 1) * CELL_SIZE - width;
   var top = (HEIGHT + 1) * CELL_SIZE;
 
+  /* Grid for the Neighbour Weight */
   left += neighbour_weight_report(left, top) + CELL_SIZE;
 
   /* Bar for the Age Advantage */
-  // left += 64 + CELL_SIZE;
-  rect(left, 526, 128, 32);
+  left += age_advantage_report(left, top + 16) + CELL_SIZE;
 
   /* Bar for the Mates Rates */
-  left += 128 + CELL_SIZE;
   rect(left, 510, 32, 64);
 
   /* Grid for the Tribal Advantage */
   left += 32 + CELL_SIZE;
-  rect(left, 510, 64, 64);
+  left = tribal_advantage_report(left, top);
 }
 
 /*
