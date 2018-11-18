@@ -197,6 +197,53 @@ function init_weights () {
   }
 }
 
+function neighbour_weight_report (left, top) {
+  var size = 64;
+  var w = WEIGHT.length;
+  var l = left + 2;
+  var t = top + 2;
+  var c;
+  var m = max(NEIGHBOUR_WEIGHT);
+  var s = 12;
+
+  fill([204, 204, 204]);
+  noStroke();
+  rect(left, top, size, size);
+
+  for (var x = 0; x < w; x++) {
+    for (var y = 0; y < w; y++) {
+      c = int((1 - (NEIGHBOUR_WEIGHT[x + y * w] / m)) * 128) + 32;
+      fill([c, c, c]);
+      rect(l + x * s, t + y * s, s, s);
+    }
+  }
+
+  return size;
+}
+
+function static_values_report () {
+  fill([204, 204, 204]);
+  noStroke();
+
+  /* Grid for the Neighbour Weight */
+  var left = (WIDTH - 1) * CELL_SIZE - (64 + 128 + 32 + 64 + 3 * CELL_SIZE);
+  var top = (HEIGHT + 1) * CELL_SIZE;
+
+  left += neighbour_weight_report(left, top) + CELL_SIZE;
+
+  /* Bar for the Age Advantage */
+  // left += 64 + CELL_SIZE;
+  rect(left, 526, 128, 32);
+
+  /* Bar for the Mates Rates */
+  left += 128 + CELL_SIZE;
+  rect(left, 510, 32, 64);
+
+  /* Grid for the Tribal Advantage */
+  left += 32 + CELL_SIZE;
+  rect(left, 510, 64, 64);
+}
+
 /*
  * This is the function that does all the work.  It calculates the probability
  * of the next generation of cells based on proximity to other cells.
@@ -305,14 +352,8 @@ function setup() {
   /* Initialise the environment - put down 6 random tribes */
   seed_plate(CELLS[TIC]);
 
-  fill([204, 204, 204]);
-  noStroke();
-  /* Bar for the Age Advantage */
-  rect(496, 526, 128, 32);
-  /* Bar for the Mates Rates */
-  rect(656, 510, 32, 64);
-  /* Grid for the Tribal Advantage */
-  rect(720, 510, 64, 64);
+  /* Reports on initial (static) settings */
+  static_values_report();
 }
 
 function draw() {
