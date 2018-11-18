@@ -7,4 +7,4 @@ jobs:
       script:
       - KEY_FILE=$(mktemp)
       - echo ${key} | base64 --decode >${KEY_FILE}
-      - ssh -oStrictHostKeyChecking=no -p 20022 ${user}@gryffydd.com -i ${KEY_FILE} 'cd public_html/gryffydd.com/algae; git pull ; rm p5.js ; wget https://github.com/processing/p5.js/releases/download/0.7.2/p5.js'
+      - ssh -oStrictHostKeyChecking=no -p 20022 ${user}@gryffydd.com -i ${KEY_FILE} 'cd public_html/gryffydd.com/algae; git pull'
