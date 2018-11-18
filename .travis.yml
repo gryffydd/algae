@@ -1,15 +1,11 @@
+language: c
 stages:
 - deploy
-env:
-  global:
-  - 'SSH_USER=[user]'
-  - 'SSH_KEY=[key]'
 jobs:
   include:
     - stage: deploy
       rvm: 2.4
       script:
       - KEY_FILE=$(mktemp)
-      - echo ${key}
       - echo ${key} | base64 --decode >${KEY_FILE}
       - ssh -oStrictHostKeyChecking=no -p 20022 ${user}@gryffydd.com -i ${KEY_FILE} 'cd public_html/gryffydd.com/algae; git pull'
