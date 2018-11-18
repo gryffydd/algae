@@ -10,6 +10,6 @@ jobs:
       rvm: 2.4
       script:
       - KEY_FILE=$(mktemp)
-      - echo ${SSH_KEY}
-      - echo ${SSH_KEY} | base64 --decode >${KEY_FILE}
-      - ssh -oStrictHostKeyChecking=no -p 20022 ${SSH_USER}@gryffydd.com -i ${KEY_FILE} 'cd public_html/gryffydd.com/algae; git pull'
+      - echo ${key}
+      - echo ${key} | base64 --decode >${KEY_FILE}
+      - ssh -oStrictHostKeyChecking=no -p 20022 ${user}@gryffydd.com -i ${KEY_FILE} 'cd public_html/gryffydd.com/algae; git pull'
