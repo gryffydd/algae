@@ -79,12 +79,12 @@ function apply_gravity(bodies) {
             let b2 = bodies[j];
             let d = b1.position.copy();
             d.sub(b2.position);
-            let g = (b2.mass / (d.dist(z) * d.dist(z))) * 1000;
-            if (g > 1) { console.log(i, j, g); }
-            g = min(1, g);
+            // let g = (b2.mass / (d.dist(z) * d.dist(z))) * 1000;
+            // if (g > 1) { console.log(i, j, g); }
+            // g = min(1, g);
             d.normalize();
-            d.mult(g);
-            // d.div(b1.mass / MASS);
+            // d.mult(g);
+            d.div(b1.mass / MASS);
             b1.velocity.sub(d);
         }
     }
