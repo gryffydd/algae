@@ -6,7 +6,7 @@
 let SPACE = 1000;
 let MASS = 10;
 let bodies;
-let BODY_COUNT = 33;
+let BODY_COUNT = 6;
 
 let padding = 20;
 let c_width;
@@ -75,8 +75,13 @@ let Bodies = function() {
     this.display = function() {
         let c = createVector(c_width / 2, c_height / 2);
         c.sub(this.center);
-        fill(color(0, 51, 0, 17))
+        // fill(color(0, 51, 0, 17));
+        noFill();
+        stroke(color(0, 51, 0, 17));
         circle(c.x, c.y, SPACE * 0.5 * this.scale);
+        circle(c.x, c.y, SPACE * 1 * this.scale);
+        circle(c.x, c.y, SPACE * 5 * this.scale);
+        circle(c.x, c.y, SPACE * 10 * this.scale);
 
         c = createVector(c_width / 2, c_height / 2);
         for (let i = 0; i < this.bodies.length; i++) {
@@ -86,6 +91,7 @@ let Bodies = function() {
             pos.mult(this.scale);
             pos.add(c);
             fill(b.color);
+            stroke(color(0, 0, 0, 128));
             circle(pos.x, pos.y, b.mass * this.scale);
         }
     }
