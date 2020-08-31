@@ -116,6 +116,7 @@ let Bodies = function() {
         for (let i = 0; i < this.bodies.length; i++) {
             d = max(d, c.dist(this.bodies[i].position));
         }
+        // if (d > SPACE * 50) { noLoop(); }
         this.scale = max(0.05, (this.scale + (SPACE / d)) / 2);
         c.sub(this.center);
         if (c.mag() > SPACE / 5) {
