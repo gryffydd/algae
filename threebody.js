@@ -8,7 +8,7 @@ let MASS = 10;
 let bodies;
 let BODY_COUNT = 3;
 
-let padding = 16;
+let padding = 20;
 let c_width;
 let c_height;
 
