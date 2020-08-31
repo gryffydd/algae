@@ -6,7 +6,7 @@
 let SPACE = 1000;
 let MASS = 10;
 let bodies;
-let BODY_COUNT = 6;
+let BODY_COUNT = 3;
 
 let padding = 20;
 let c_width;
@@ -21,7 +21,7 @@ function setup() {
 }
 
 function draw() {
-    background(color(0, 0, 0, 3));
+    //background(color(0, 0, 0, 3));
 
     bodies.display();
     bodies.move();
@@ -46,7 +46,6 @@ function nice_color () {
 
 let Bodies = function() {
     this.scale = 1.0;
-    this.scale = 0.2;
     this.center = createVector(0, 0);
 
     this.bodies = [];
