@@ -21,12 +21,13 @@ function setup() {
 }
 
 function draw() {
-    //background(color(0, 0, 0, 3));
+    // background(color(0, 0, 0, 3));
 
     bodies.display();
     bodies.move();
+    // bodies.limit_extent();
     bodies.apply_gravity();
-    bodies.pan_and_scale();
+    bodies.pan_and_zoom();
 
     if (mouseIsPressed) { noLoop(); }
 
@@ -36,13 +37,23 @@ function draw() {
 
 
 function nice_color () {
-    let r = int(random(64)) + 192;
-    let g = int(random(64)) + 192;
-    let b = int(random(64)) + 192;
+    let r = int(random(128)) + 128;
+    let g = int(random(128)) + 128;
+    let b = int(random(128)) + 128;
 
     return color(r, g, b,);
 }
 
+
+function draw_center_circles (c, s) {
+    noFill();
+    stroke(color(0, 17, 0, 17));
+    let radius = SPACE * s / 2;
+    for (i = 1; i < 5; i++) {
+        circle(c.x, c.y, radius);
+        radius *= 2;
+    }
+}
 
 let Bodies = function() {
     this.scale = 1.0;
@@ -74,13 +85,7 @@ let Bodies = function() {
     this.display = function() {
         let c = createVector(c_width / 2, c_height / 2);
         c.sub(this.center);
-        // fill(color(0, 51, 0, 17));
-        noFill();
-        stroke(color(0, 51, 0, 17));
-        circle(c.x, c.y, SPACE * 0.5 * this.scale);
-        circle(c.x, c.y, SPACE * 1 * this.scale);
-        circle(c.x, c.y, SPACE * 5 * this.scale);
-        circle(c.x, c.y, SPACE * 10 * this.scale);
+        // draw_center_circles (c, this.scale);
 
         c = createVector(c_width / 2, c_height / 2);
         for (let i = 0; i < this.bodies.length; i++) {
@@ -101,7 +106,7 @@ let Bodies = function() {
         }
     }
 
-    this.pan_and_scale = function() {
+    this.pan_and_zoom = function() {
         let c = createVector(0, 0);
         let d = SPACE;
         for (let i = 0; i < this.bodies.length; i++) {
@@ -111,10 +116,41 @@ let Bodies = function() {
         for (let i = 0; i < this.bodies.length; i++) {
             d = max(d, c.dist(this.bodies[i].position));
         }
-        this.scale = max(0.02, (this.scale + (SPACE / d)) / 2);
+        this.scale = max(0.05, (this.scale + (SPACE / d)) / 2);
         c.sub(this.center);
-        c.div(5);
-        this.center.add(c);
+        if (c.mag() > SPACE / 5) {
+            // console.log(c.mag());
+            d = (c.mag() - SPACE / 5) / 10;
+            c.normalize();
+            c.mult(d);
+            this.center.add(c);
+        }
+    }
+
+    this.limit_extent = function() {
+        let c = createVector(0, 0);
+        let d = 0;
+        for (let i = 0; i < this.bodies.length; i++) {
+            c.add(this.bodies[i].position);
+        }
+        c.div(this.bodies.length);
+        for (let i = 0; i < this.bodies.length; i++) {
+            d = max(d, c.dist(this.bodies[i].position));
+        }
+        if (d > SPACE * 9) {
+            console.log(d);
+        }
+        if (d > SPACE * 10) {
+            for (let i = 0; i < this.bodies.length; i++) {
+                if (d == c.dist(this.bodies[i].position)) {
+                    console.log("Teleport " + i);
+                    console.log(this.bodies[i].position);
+                    this.bodies[i] = new Body();
+                    this.bodies[i].position.add(c);
+                    console.log(this.bodies[i].position);
+                }
+            } 
+        }
     }
 }
 
